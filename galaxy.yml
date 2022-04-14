@@ -1,0 +1,17 @@
+---
+namespace: dannixon
+name: k8s
+
+version: 0.0.1
+
+readme: README.md
+
+authors:
+  - Dan Nixon <dan@dan-nixon.com>
+
+description: Roles for creating Kubernetes clusters
+
+license: MIT
+
+repository: https://github.com/DanNixon/ansible-k8s
+issues: https://github.com/DanNixon/ansible-k8s/issues

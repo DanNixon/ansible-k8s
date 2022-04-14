@@ -1,0 +1,33 @@
+---
+- name: Deployment
+  delegate_to: localhost
+  run_once: true
+  block:
+    - name: Ensure namespace exists
+      kubernetes.core.k8s:
+        definition:
+          apiVersion: v1
+          kind: Namespace
+          metadata:
+            name: metallb-system
+            labels:
+              app: metallb
+        state: present
+
+    - name: Ensure configuration is present
+      kubernetes.core.k8s:
+        definition:
+          apiVersion: v1
+          kind: ConfigMap
+          metadata:
+            name: config
+            namespace: metallb-system
+          data:
+            config: |
+              {{ metallb_config | to_nice_yaml }}
+        state: present
+
+    - name: Ensure MetalLB is deployed
+      kubernetes.core.k8s:
+        src: metallb.yaml
+        state: present

@@ -1,0 +1,17 @@
+---
+- name: Initialise cluster
+  become: true
+  ansible.builtin.command:
+    argv:
+      - kubeadm
+      - init
+      - "--control-plane-endpoint={{ kubeadm_control_plane_endpoint }}"
+      - "--apiserver-advertise-address={{ kubeadm_apiserver_advertise_address }}"
+      - "--service-cidr={{ kubeadm_service_cidr }}"
+      - --skip-phases=addon/kube-proxy
+  changed_when: true
+  register: kubeadm_init
+
+- name: Cluster init result
+  ansible.builtin.debug:
+    var: kubeadm_init.stdout_lines

@@ -1,0 +1,11 @@
+---
+- name: Ensure memberlist is allowed through firewall
+  become: true
+  community.general.ufw:
+    rule: allow
+    port: 7946
+    proto: "{{ item }}"
+    comment: MetalLB - memberlist
+  loop:
+    - tcp
+    - udp

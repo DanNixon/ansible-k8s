@@ -1,0 +1,37 @@
+---
+- name: Generate bootstrap token
+  delegate_to: "{{ groups['k8s_control_plane'][0] }}"
+  run_once: true
+  become: true
+  ansible.builtin.command: kubeadm token create
+  changed_when: true
+  register: kubeadm_generate_token
+
+- name: Calculate CA certificate hash
+  delegate_to: "{{ groups['k8s_control_plane'][0] }}"
+  run_once: true
+  become: true
+  ansible.builtin.shell: |
+    set -o pipefail && \
+    openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt \
+      | openssl rsa -pubin -outform der 2>/dev/null \
+      | openssl dgst -sha256 -hex \
+      | sed 's/^.* //'
+  args:
+    executable: /bin/bash
+  changed_when: false
+  register: kubeadm_calculate_ca_cert_hash
+
+- name: Check for existing kubelet config
+  ansible.builtin.stat:
+    path: /etc/kubernetes/kubelet.conf
+    get_attributes: false
+    get_checksum: false
+    get_mime: false
+  register: kubeadm_stat_kubelet_config
+
+- name: Set facts
+  ansible.builtin.set_fact:
+    kubeadm_node_has_not_yet_joined: "{{ not kubeadm_stat_kubelet_config.stat.exists }}"
+    kubeadm_token: "{{ kubeadm_generate_token.stdout }}"
+    kubeadm_ca_cert_hash: "{{ kubeadm_calculate_ca_cert_hash.stdout }}"

@@ -1,0 +1,6 @@
+---
+kubeadm_control_plane_endpoint: localhost:6443
+
+kubeadm_service_cidr: 10.230.0.0/16
+
+kubeadm_local_kubeconfig_path: kubeconfig.yml

@@ -1,0 +1,14 @@
+---
+galaxy_info:
+  author: dannixon
+  description: Ensures prerequisites for a Kubernetes cluster node are satisfied
+  license: MIT
+
+  min_ansible_version: 2.1
+
+  platforms:
+    - name: Ubuntu
+      versions:
+        - focal
+
+dependencies: []

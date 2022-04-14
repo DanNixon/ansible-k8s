@@ -1,0 +1,61 @@
+---
+- name: Ensure apt repo key is present
+  become: true
+  ansible.builtin.apt_key:
+    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    state: present
+
+- name: Ensure apt repo is present
+  become: true
+  ansible.builtin.apt_repository:
+    repo: deb https://apt.kubernetes.io/ kubernetes-xenial main
+    state: present
+
+- name: Ensure packages are installed
+  become: true
+  ansible.builtin.apt:
+    update_cache: true
+    name:
+      - kubeadm
+      - kubectl
+      - kubelet
+    state: present
+
+- name: Ensure packages excluded from system package updates
+  become: true
+  ansible.builtin.dpkg_selections:
+    name: "{{ item }}"
+    selection: hold
+  loop:
+    - kubeadm
+    - kubectl
+    - kubelet
+
+- name: Ensure Kubernetes API is allowed through firewall
+  become: true
+  community.general.ufw:
+    rule: allow
+    port: 6443
+    proto: tcp
+    comment: kubeadm - Kubernetes API
+  when: inventory_hostname in groups['k8s_control_plane']
+
+- name: Ensure etcd is allowed through firewall
+  become: true
+  community.general.ufw:
+    rule: allow
+    port: "{{ item }}"
+    proto: tcp
+    comment: kubeadm - etcd
+  loop:
+    - 2379
+    - 2380
+  when: inventory_hostname in groups['k8s_control_plane']
+
+- name: Ensure Kubelet API is allowed through firewall
+  become: true
+  community.general.ufw:
+    rule: allow
+    port: 10250
+    proto: tcp
+    comment: kubeadm - kubelet API

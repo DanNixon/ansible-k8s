@@ -1,0 +1,17 @@
+---
+- name: Prepare control plane for new nodes
+  ansible.builtin.import_tasks: helpers/join_prepare.yml
+
+- name: Add new worker node
+  become: true
+  ansible.builtin.command:
+    argv:
+      - kubeadm
+      - join
+      - "{{ kubeadm_control_plane_endpoint }}"
+      - "--token={{ kubeadm_token }}"
+      - "--discovery-token-ca-cert-hash=sha256:{{ kubeadm_ca_cert_hash }}"
+  when: kubeadm_node_has_not_yet_joined
+
+- name: Clean up after joining nodes
+  ansible.builtin.import_tasks: helpers/delete_bootstrap_token.yml

@@ -1,0 +1,33 @@
+---
+- name: Prepare control plane for new nodes
+  ansible.builtin.import_tasks: helpers/join_prepare.yml
+
+- name: Upload encrypted certificates
+  delegate_to: "{{ groups['k8s_control_plane'][0] }}"
+  run_once: true
+  become: true
+  ansible.builtin.command: kubeadm init phase upload-certs --upload-certs
+  changed_when: true
+  register: kubeadm_upload_certs
+
+- name: Set facts
+  ansible.builtin.set_fact:
+    kubeadm_cert_key: "{{ kubeadm_upload_certs.stdout_lines[-1] }}"
+
+- name: Add new control plane node
+  become: true
+  ansible.builtin.command:
+    argv:
+      - kubeadm
+      - join
+      - "{{ kubeadm_control_plane_endpoint }}"
+      - "--token={{ kubeadm_token }}"
+      - "--discovery-token-ca-cert-hash=sha256:{{ kubeadm_ca_cert_hash }}"
+      - --control-plane
+      - "--certificate-key={{ kubeadm_cert_key }}"
+      - "--apiserver-advertise-address={{ kubeadm_apiserver_advertise_address }}"
+  changed_when: true
+  when: kubeadm_node_has_not_yet_joined
+
+- name: Clean up after joining nodes
+  ansible.builtin.import_tasks: helpers/delete_bootstrap_token.yml

@@ -1,0 +1,7 @@
+---
+crio_repo_url_base: https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable
+
+crio_repo_url: "{{ crio_repo_url_base }}/{{ crio_os }}"
+crio_repo_url_crio: "{{ crio_repo_url_base }}:/cri-o:/{{ crio_version }}/{{ crio_os }}"
+
+crio_os: "{{ ((ansible_distribution == 'Ubuntu') | ternary('x', '')) ~ ansible_distribution ~ '_' ~ ansible_distribution_version }}"

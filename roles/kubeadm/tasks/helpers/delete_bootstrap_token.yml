@@ -1,0 +1,7 @@
+---
+- name: Delete bootstrap token
+  delegate_to: "{{ groups['k8s_control_plane'][0] }}"
+  run_once: true
+  become: true
+  ansible.builtin.command: "kubeadm token delete {{ kubeadm_token }}"
+  changed_when: true

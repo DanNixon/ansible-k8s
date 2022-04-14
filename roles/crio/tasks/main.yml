@@ -1,0 +1,65 @@
+---
+- name: Ensure uid/gid mappings for user namespaces are present
+  become: true
+  ansible.builtin.lineinfile:
+    path: "{{ item }}"
+    line: containers:100000:65536
+    regex: "^containers:"
+    state: present
+  loop:
+    - /etc/subuid
+    - /etc/subgid
+  notify: Restart CRI-O
+
+- name: Ensure apt repo keys are present
+  become: true
+  ansible.builtin.apt_key:
+    url: "{{ item }}"
+    state: present
+  loop:
+    - "{{ crio_repo_url }}/Release.key"
+    - "{{ crio_repo_url_crio }}/Release.key"
+
+- name: Ensure apt repos are present
+  become: true
+  ansible.builtin.apt_repository:
+    repo: "{{ item }}"
+    state: present
+  loop:
+    - "deb {{ crio_repo_url }}/ /"
+    - "deb {{ crio_repo_url_crio }}/ /"
+
+- name: Ensure packages are installed
+  become: true
+  ansible.builtin.apt:
+    update_cache: true
+    name:
+      - cri-o
+      - cri-o-runc
+      - cri-tools
+    state: present
+
+- name: Ensure example CNI configs are removed
+  become: true
+  ansible.builtin.file:
+    path: "/etc/cni/net.d/{{ item }}"
+    state: absent
+  loop:
+    - 100-crio-bridge.conf
+    - 200-loopback.conf
+  notify: Restart CRI-O
+
+- name: Ensure configuration is present
+  become: true
+  ansible.builtin.copy:
+    src: 01-userns-workload.conf
+    dest: /etc/crio/crio.conf.d/
+    mode: "u=rw,g=r,o=r"
+  notify: Restart CRI-O
+
+- name: Ensure service is enabled and running
+  become: true
+  ansible.builtin.service:
+    name: crio
+    enabled: true
+    state: started

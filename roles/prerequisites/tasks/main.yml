@@ -1,0 +1,44 @@
+---
+- name: Ensure required packages are installed
+  become: true
+  ansible.builtin.package:
+    name:
+      - apparmor
+      - conntrack
+      - libseccomp2
+    state: present
+
+- name: Ensure IPv4 forwarding is enabled
+  become: true
+  ansible.posix.sysctl:
+    name: net.ipv4.ip_forward
+    value: "1"
+    state: present
+    reload: true
+
+- name: Ensure br_netfilter kernel module will be loaded on boot
+  become: true
+  ansible.builtin.copy:
+    content: |
+      br_netfilter
+    dest: /etc/modules-load.d/k8s.conf
+    mode: "u=rw,g=r,o=r"
+
+- name: Ensure br_netfilter kernel module is loaded now
+  become: true
+  community.general.modprobe:
+    name: br_netfilter
+    state: present
+
+- name: Ensure firewall is enabled
+  become: true
+  community.general.ufw:
+    state: enabled
+    policy: deny
+
+- name: Ensure SSH is allowed through firewall
+  become: true
+  community.general.ufw:
+    rule: limit
+    port: ssh
+    proto: tcp

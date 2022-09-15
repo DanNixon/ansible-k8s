@@ -1,0 +1,1 @@
+{{ lookup('ansible.builtin.url', grafana_agent_manifest_url ~ component.manifest_file, split_lines='false') | regex_replace('\${NAMESPACE}', component.namespace) }}

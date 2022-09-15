@@ -1,0 +1,2 @@
+---
+grafana_agent_manifest_url: "https://raw.githubusercontent.com/grafana/agent/{{ grafana_agent_version }}/production/kubernetes/"

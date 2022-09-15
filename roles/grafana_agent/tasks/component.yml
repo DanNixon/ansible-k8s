@@ -1,0 +1,17 @@
+---
+- name: "Namespace ({{ component.namespace }})"
+  delegate_to: localhost
+  run_once: true
+  kubernetes.core.k8s:
+    api_version: v1
+    kind: Namespace
+    name: "{{ component.namespace }}"
+    state: "{{ 'present' if component.enabled else 'absent' }}"
+
+- name: "Ensure Grafana Agent is deployed ({{ component.manifest_file }})"
+  delegate_to: localhost
+  run_once: true
+  kubernetes.core.k8s:
+    definition: "{{ lookup('template', 'agent-manifest.yml') | from_yaml_all | list }}"
+    state: present
+  when: component.enabled

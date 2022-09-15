@@ -1,0 +1,8 @@
+---
+grafana_agent_version: v0.24.2
+
+grafana_agent_metrics_enable: false
+grafana_agent_metrics_namespace: grafana-agent-metrics
+
+grafana_agent_logs_enable: false
+grafana_agent_logs_namespace: grafana-agent-logs

@@ -1,0 +1,12 @@
+---
+- name: Component
+  ansible.builtin.include_tasks: component.yml
+  loop:
+    - namespace: "{{ grafana_agent_metrics_namespace }}"
+      enabled: "{{ grafana_agent_metrics_enable }}"
+      manifest_file: agent-bare.yaml
+    - namespace: "{{ grafana_agent_logs_namespace }}"
+      enabled: "{{ grafana_agent_logs_enable }}"
+      manifest_file: agent-loki.yaml
+  loop_control:
+    loop_var: component

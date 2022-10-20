@@ -1,5 +1,5 @@
 ---
-- name: "Namespace ({{ component.namespace }})"
+- name: "Namespace {{ component.namespace }}"
   delegate_to: localhost
   run_once: true
   kubernetes.core.k8s:
@@ -8,7 +8,21 @@
     name: "{{ component.namespace }}"
     state: "{{ 'present' if component.enabled else 'absent' }}"
 
-- name: "Ensure Grafana Agent is deployed ({{ component.manifest_file }})"
+- name: "Ensure config exists: {{ component.config_name }}"
+  delegate_to: localhost
+  run_once: true
+  kubernetes.core.k8s:
+    definition:
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: "{{ component.config_name }}"
+        namespace: "{{ component.namespace }}"
+      data:
+        agent.yaml: "{{ component.config }}"
+    state: present
+
+- name: "Ensure Grafana Agent is deployed: {{ component.manifest_file }}"
   delegate_to: localhost
   run_once: true
   kubernetes.core.k8s:

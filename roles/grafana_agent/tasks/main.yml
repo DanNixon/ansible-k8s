@@ -5,8 +5,13 @@
     - namespace: "{{ grafana_agent_metrics_namespace }}"
       enabled: "{{ grafana_agent_metrics_enable }}"
       manifest_file: agent-bare.yaml
+      config_name: grafana-agent
+      config: "{{ grafana_agent_metrics_config }}"
     - namespace: "{{ grafana_agent_logs_namespace }}"
       enabled: "{{ grafana_agent_logs_enable }}"
       manifest_file: agent-loki.yaml
+      config_name: grafana-agent-logs
+      config: "{{ grafana_agent_logs_config }}"
   loop_control:
     loop_var: component
+    label: "{{ component.manifest_file }}"

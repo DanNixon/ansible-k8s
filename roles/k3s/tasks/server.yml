@@ -1,0 +1,30 @@
+---
+- name: Ensure K3s service file is present
+  become: true
+  ansible.builtin.template:
+    src: k3s-server.service
+    dest: /usr/lib/systemd/system/k3s.service
+    owner: root
+    group: root
+    mode: "u=r,g=r,o=r"
+  notify: Restart K3s
+
+- name: Ensure K3s configuration is present
+  become: true
+  ansible.builtin.template:
+    src: k3s.env
+    dest: /etc/k3s.env
+    owner: root
+    group: root
+    mode: "u=r,g=r,o="
+  vars:
+    token: "{{ k3s_tokens.server }}"
+  notify: Restart K3s
+
+- name: Ensure K3s service is enabled and running
+  become: true
+  ansible.builtin.systemd:
+    name: k3s
+    daemon_reload: "yes"
+    enabled: true
+    state: started

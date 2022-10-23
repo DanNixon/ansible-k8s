@@ -1,0 +1,68 @@
+---
+- name: Ensure K3s service file is present
+  become: true
+  ansible.builtin.template:
+    src: k3s-server.service
+    dest: /usr/lib/systemd/system/k3s.service
+    owner: root
+    group: root
+    mode: "u=r,g=r,o=r"
+  notify: Restart K3s
+
+- name: Ensure K3s configuration is present
+  become: true
+  ansible.builtin.template:
+    src: k3s-first-server.env
+    dest: /etc/k3s.env
+    owner: root
+    group: root
+    mode: "u=r,g=r,o="
+  notify: Restart K3s
+
+- name: Ensure K3s service is enabled and running
+  become: true
+  ansible.builtin.systemd:
+    name: k3s
+    daemon_reload: "yes"
+    enabled: true
+    state: started
+
+- name: Ensure service changes are performed
+  ansible.builtin.meta: flush_handlers
+
+# Get token used to join nodes.
+# See: https://rancher.com/docs/k3s/latest/en/advanced/#server-and-agent-tokens
+
+- name: Wait for token
+  become: true
+  ansible.builtin.wait_for:
+    path: "{{ k3s_server_location }}/server/token"
+
+- name: Read token
+  become: true
+  ansible.builtin.slurp:
+    path: "{{ k3s_server_location }}/server/token"
+  register: token_file
+
+- name: Store tokens
+  ansible.builtin.set_fact:
+    tokens:
+      server: "{{ token_file.content | b64decode | regex_replace('\\n', '') }}"
+      agent: "{{ token_file.content | b64decode | regex_search('\\:\\:server\\:(\\w+)', '\\1') | first }}"
+
+- name: Tokens
+  ansible.builtin.debug:
+    var: tokens
+
+# Get kubectl file contents.
+# See: https://rancher.com/docs/k3s/latest/en/cluster-access/
+
+- name: Retrieve kubeconfig file contents
+  become: true
+  ansible.builtin.slurp:
+    src: /etc/rancher/k3s/k3s.yaml
+  register: kubeconfig
+
+- name: Store kubeconfig file contents
+  ansible.builtin.set_fact:
+    kubeconfig: "{{ kubeconfig.content | b64decode | regex_replace('127\\.0\\.0\\.1', ansible_host) }}"

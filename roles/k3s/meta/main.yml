@@ -1,0 +1,14 @@
+---
+galaxy_info:
+  author: dannixon
+  description: Deploys a K3s based Kubernetes cluster.
+  license: MIT
+
+  min_ansible_version: "2.1"
+
+  platforms:
+    - name: Ubuntu
+      versions:
+        - focal
+
+dependencies: []

@@ -1,0 +1,8 @@
+---
+k3s_version: v1.23.6+k3s1
+
+k3s_extra_server_args: []
+k3s_extra_agent_args: []
+
+k3s_server_host: hostvars[groups['k3s_server'][0]]['ansible_host']
+k3s_server_token: hostvars[groups['k3s_server'][0]]['token']

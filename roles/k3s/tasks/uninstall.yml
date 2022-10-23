@@ -1,0 +1,22 @@
+---
+- name: Ensure K3s service is disabled and stopped
+  become: true
+  ansible.builtin.systemd:
+    name: k3s
+    enabled: false
+    state: stopped
+  failed_when: false
+
+- name: Ensure relevant files and directories are removed
+  become: true
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /etc/rancher
+    - /etc/k3s.env
+    - /run/k3s
+    - /usr/lib/systemd/k3s.service
+    - /usr/local/bin/k3s
+    - /var/lib/kublet
+    - /var/lib/rancher

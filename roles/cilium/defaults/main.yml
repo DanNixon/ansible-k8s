@@ -1,0 +1,3 @@
+---
+cilium_version: 1.11.4
+cilium_pod_cidr: 10.220.0.0/16

@@ -1,0 +1,6 @@
+---
+- name: Node configuration
+  ansible.builtin.include_tasks: node.yml
+
+- name: Kubernetes deployment
+  ansible.builtin.include_tasks: deploy.yml

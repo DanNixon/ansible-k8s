@@ -1,0 +1,31 @@
+---
+- name: Run K3s install script
+  become: true
+  ansible.builtin.shell:  # noqa: command-instead-of-shell
+    cmd: "{{ lookup('ansible.builtin.url', 'https://get.k3s.io/', split_lines=False) }}"
+  environment: "{{ k3s_install_options }}"
+  changed_when: true
+
+- name: Ensure k3s-killall systemd service is present
+  become: true
+  ansible.builtin.copy:
+    src: k3s-killall-on-shutdown.service
+    dest: /usr/lib/systemd/system/
+    mode: "u=rw,g=r,o=r"
+
+- name: Ensure k3s-killall systemd service is enabled
+  become: true
+  ansible.builtin.systemd:
+    name: k3s-killall-on-shutdown.service
+    enabled: true
+    daemon_reload: true
+
+- name: Retrieve kubeconfig file contents
+  become: true
+  ansible.builtin.slurp:
+    src: /etc/rancher/k3s/k3s.yaml
+  register: kubeconfig
+
+- name: Store kubeconfig file contents
+  ansible.builtin.set_fact:
+    k3s_install_kubeconfig: "{{ kubeconfig.content | b64decode | regex_replace('127\\.0\\.0\\.1', ansible_host) }}"

@@ -17,6 +17,8 @@
         chart_ref: longhorn/longhorn
         chart_version: "{{ longhorn_chart_version }}"
         values:
+          annotations:
+            prometheus.io/scrape: "true"
           defaultSettings:
             backupTarget: "{{ longhorn_s3_backup_target if longhorn_s3_backup_enabled else None }}"
             backupTargetCredentialSecret: "{{ longhorn_s3_backup_secret_name }}"
